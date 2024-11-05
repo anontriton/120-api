@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS120 API Assignment</title>
+</head>
+
+<body>
+    <h1>Stock Price Checker</h1>
+    
+    <div>
+        <input type="text" id="stockSymbol" placeholder="Enter stock symbol">
+        <button onclick="getStockData()">Search</button>
+    </div>
+
+    <div id="stockInfo" class="stock-container stock-info">
+        <h2 id="stockName"></h2>
+        <p>Date: <span id="date"></span></p>
+        <p>Closing Price: $<span id="price"></span></p>
+        <p>Volume: <span id="volume"></span></p>
+        <p>High: $<span id="high"></span></p>
+        <p>Low: $<span id="low"></span></p>
+    </div>
+
+    <div id="error" class="error"></div>
+
+    <script>
+        async function getStockData() {
+            
+            // API KEY FOR MARKETSTACK
+            const apiKey = '39b717f34916c30097beec27832459cd';
+            
+            const symbol = document.getElementById('stockSymbol').value.toUpperCase();
+            const error = document.getElementById('error');
+            const stockInfo = document.getElementById('stockInfo');
+
+            if (!symbol) {
+                error.textContent = 'Please enter a stock symbol';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://api.marketstack.com/v1/eod?access_key=${apiKey}&symbols=${symbol}`);
+                const data = await response.json();
+
+                if (data.data && data.data.length > 0) {
+                    const stockData = data.data[0];
+                    
+                    document.getElementById('stockName').textContent = symbol;
+                    document.getElementById('price').textContent = stockData.close.toFixed(2);
+                    document.getElementById('date').textContent = new Date(stockData.date).toLocaleDateString();
+                    document.getElementById('volume').textContent = stockData.volume.toLocaleString();
+                    document.getElementById('high').textContent = stockData.high.toFixed(2);
+                    document.getElementById('low').textContent = stockData.low.toFixed(2);
+
+                    error.textContent = '';
+                    stockInfo.style.display = 'block';
+                } else {
+                    error.textContent = 'No data found for this symbol';
+                    stockInfo.style.display = 'none';
+                }
+            } catch (error) {
+                error.textContent = 'Error fetching stock data. Please try again.';
+                stockInfo.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>
